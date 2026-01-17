@@ -1,34 +1,48 @@
 
 local Players = game:GetService("Players")
-local UserInput = game:GetService("UserInputService")
 local player = Players.LocalPlayer
+local UserInput = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
+-- يتأكد إنك داخل الماب المطلوب
 if not string.find(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name, "كسر كتلة محضوض") then
     warn("السكربت يشتغل فقط في ماب كسر كتلة محضوض")
     return
 end
 
+-- حالة القفز
 local jumpEnabled = false
 
-local function toggleJump()
-    jumpEnabled = not jumpEnabled
-    print(jumpEnabled and "تم تفعيل القفز" or "تم ايقاف القفز")
+-- دالة القفز
+local function onJump()
+    if jumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
 end
 
-UserInput.JumpRequest:Connect(function()
-    if jumpEnabled then
-        local character = player.Character
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
+-- GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "JumpGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local jumpButton = Instance.new("TextButton")
+jumpButton.Size = UDim2.new(0,150,0,50)
+jumpButton.Position = UDim2.new(0,20,0,20)
+jumpButton.BackgroundColor3 = Color3.fromRGB(0,170,255)
+jumpButton.TextColor3 = Color3.fromRGB(255,255,255)
+jumpButton.Font = Enum.Font.SourceSansBold
+jumpButton.TextSize = 20
+jumpButton.Text = "قفز: OFF"
+jumpButton.Parent = screenGui
+
+-- تفعيل/إيقاف القفز عند الضغط على الزر
+jumpButton.MouseButton1Click:Connect(function()
+    jumpEnabled = not jumpEnabled
+    jumpButton.Text = jumpEnabled and "قفز: ON" or "قفز: OFF"
 end)
 
-UserInput.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.J then
-        toggleJump()
-    end
-end)
+-- استماع للضغط على المسافة
+UserInput.JumpRequest:Connect(onJump)
 
-print("اضغط J لتشغيل/إيقاف القفز")
+print("GUI جاهز! اضغط الزر لتشغيل/إيقاف القفز")
